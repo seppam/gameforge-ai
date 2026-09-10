@@ -7,8 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
     "db:migrate": "supabase migration up",
-    "db:reset": "supabase db reset"
+    "db:reset": "supabase db reset",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "next": "^15.0.0",
@@ -44,6 +51,13 @@
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.0.0",
-    "@tailwindcss/typography": "^0.5.0"
+    "@tailwindcss/typography": "^0.5.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "jsdom": "^25.0.0",
+    "prettier": "^3.3.0",
+    "vitest": "^2.1.0",
+    "@playwright/test": "^1.47.0"
   }
 }
