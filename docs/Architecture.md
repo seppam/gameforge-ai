@@ -69,6 +69,11 @@ GameForge AI employs a modular, decoupled architecture separating the Next.js pr
 
 ```
 gameforge-ai/
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml                       # GitHub Actions CI pipeline
+│   └── PULL_REQUEST_TEMPLATE.md         # PR template
+│
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/page.tsx
@@ -83,64 +88,125 @@ gameforge-ai/
 │   ├── play/
 │   │   └── [slug]/page.tsx              # Standalone Public Play view
 │   ├── api/
-│   │   ├── generate/route.ts            # Multi-agent prompt pipeline endpoint
-│   │   ├── patch/route.ts               # Context-aware chat modification endpoint
-│   │   ├── debug/route.ts               # Self-healing runtime bug fixer
-│   │   ├── export/
-│   │   │   ├── zip/route.ts             # Standalone ZIP bundler
-│   │   │   └── github/route.ts          # GitHub repo sync endpoint
-│   │   └── admin/llm/route.ts           # Admin LLM configuration management
+│   │   └── v1/                          # API Versioning
+│   │       ├── generate/route.ts        # Multi-agent prompt pipeline endpoint
+│   │       ├── patch/route.ts           # Context-aware chat modification endpoint
+│   │       ├── debug/route.ts           # Self-healing runtime bug fixer
+│   │       ├── export/
+│   │       │   ├── zip/route.ts         # Standalone ZIP bundler
+│   │       │   └── github/route.ts      # GitHub repo sync endpoint
+│   │       └── admin/llm/route.ts       # Admin LLM configuration management
 │   ├── layout.tsx
+│   ├── loading.tsx                      # Global loading UI
 │   └── page.tsx                         # Landing Page & Public Showcase
+│
 ├── middleware.ts                        # Edge route guard for /admin, /studio, /dashboard
+│
 ├── components/
-│   ├── layout/
+│   ├── ui/                              # shadcn/ui primitive components
+│   ├── composite/                       # Reusable composed components
+│   ├── features/                        # Domain-specific feature components
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── studio/
+│   │   └── admin/
+│   ├── layout/                          # App shell components
 │   │   ├── AppShell.tsx                 # Sidebar + header shell
 │   │   ├── Sidebar.tsx                  # Collapsible navigation + project tree
 │   │   └── Header.tsx                   # Top bar with title, status, actions
-│   ├── dashboard/
-│   │   ├── HeroSection.tsx              # Greeting + prompt input
-│   │   ├── GameCard.tsx                 # Latest game card
-│   │   └── ExamplePrompts.tsx           # "Try an Example" section
-│   ├── studio/
-│   │   ├── ChatPanel.tsx                # Left panel: message history & prompt input
-│   │   ├── SandboxCanvas.tsx            # Right panel: sandboxed iframe runner
-│   │   ├── CodeViewer.tsx               # Monaco editor preview & code diff
-│   │   ├── PipelineStepper.tsx          # Spec -> Asset -> Code -> Running progress
-│   │   ├── ConsoleDrawer.tsx            # Error capture and debug logs
-│   │   ├── FallbackAlertToast.tsx       # Live alert when provider transitions to Gemini backup
-│   │   └── PublishModal.tsx             # Share link, ZIP export, GitHub push
-│   ├── admin/
-│   │   └── ModelSelectorForm.tsx        # LLM primary + fallback assignment controls
-│   └── ui/                              # shadcn/ui shared components
+│   └── providers/                       # React context providers
+│
+├── hooks/                               # Custom React hooks
+│   ├── useAuth.ts
+│   ├── useGame.ts
+│   └── useSandbox.ts
+│
 ├── lib/
-│   ├── ai/
-│   │   ├── agents/
-│   │   │   ├── specAgent.ts             # Prompt -> Structured Game Spec (LLM)
-│   │   │   ├── assetMapper.ts           # Spec entities -> Kenney Assets + jsfxr (DETERMINISTIC)
-│   │   │   ├── coderAgent.ts            # Spec + Assets -> Phaser 3 JS Code (LLM)
-│   │   │   └── debugAgent.ts            # Error trace -> Surgical code fix (LLM, conditional)
-│   │   ├── prompts/                     # System prompts & few-shot templates
-│   │   └── providerRouter.ts            # Resilient provider router with 429/credit auto-fallback
+│   ├── server/                          # Server-only code
+│   │   ├── ai/
+│   │   │   ├── agents/
+│   │   │   │   ├── specAgent.ts         # Prompt -> Structured Game Spec (LLM)
+│   │   │   │   ├── assetMapper.ts       # Spec entities -> Kenney Assets + jsfxr (DETERMINISTIC)
+│   │   │   │   ├── coderAgent.ts        # Spec + Assets -> Phaser 3 JS Code (LLM)
+│   │   │   │   └── debugAgent.ts        # Error trace -> Surgical code fix (LLM, conditional)
+│   │   │   ├── prompts/                 # System prompts & few-shot templates
+│   │   │   └── providerRouter.ts        # Resilient provider router with 429/credit auto-fallback
+│   │   ├── db/                          # Database queries & operations
+│   │   └── export/
+│   │       └── zipGenerator.ts          # JSZip bundler for downloadable offline game
+│   │
+│   ├── client/                          # Client-only code
+│   │   └── supabase/
+│   │       ├── client.ts                # Client-side Supabase browser client
+│   │       └── middleware.ts            # Middleware session verification & RLS routing
+│   │
+│   ├── shared/                          # Isomorphic (shared) code
+│   │   ├── utils/
+│   │   │   ├── cn.ts                    # Tailwind class merger
+│   │   │   └── format.ts                # Date/number formatters
+│   │   ├── constants/
+│   │   │   └── game.ts                  # Game constants & enums
+│   │   └── validations/
+│   │       └── schemas.ts               # Zod validation schemas
+│   │
+│   ├── config/                          # Application configuration
+│   │   ├── env.ts                       # Environment variable validation (Zod)
+│   │   └── site.ts                      # Site metadata, routes, API config
+│   │
 │   ├── assets/
 │   │   ├── kenneyCatalog.json           # Indexed bank of curated Kenney sprites
 │   │   └── soundPresets.ts              # jsfxr sound configuration library
+│   │
 │   ├── sandbox/
 │   │   └── runnerTemplate.ts            # Sandboxed HTML/JS wrapper for iframe
-│   ├── export/
-│   │   └── zipGenerator.ts              # JSZip bundler for downloadable offline game
+│   │
 │   └── supabase/
-│       ├── client.ts                    # Client-side Supabase browser client
 │       ├── server.ts                    # Server-side Supabase SSR client
 │       └── middleware.ts                # Middleware session verification & RLS routing
-├── types/
+│
+├── types/                               # Global TypeScript type definitions
 │   ├── game.ts                          # Game, GameVersion, Prompt types
 │   ├── spec.ts                          # Structured Game Spec Zod schema
 │   └── admin.ts                         # LLM Provider configuration schema
+│
+├── tests/                               # Test suites
+│   ├── unit/                            # Unit tests (Vitest)
+│   ├── integration/                     # Integration tests
+│   ├── e2e/                             # End-to-end tests (Playwright)
+│   └── setup.ts                         # Test setup & configuration
+│
 ├── public/
 │   └── assets/sprites/                  # Kenney CC0 asset bank hosted static files
-├── package.json
-└── tailwind.config.ts
+│
+├── supabase/
+│   └── migrations/                      # Database migrations
+│
+├── docs/                                # Project documentation
+│   ├── PRD.md
+│   ├── Architecture.md
+│   ├── Schema.md
+│   ├── Sitemap.md
+│   ├── Rules.md
+│   ├── Design.md
+│   └── Proposal.md
+│
+├── scripts/                             # Build/utility scripts
+│
+├── .env.example                         # Environment variables template
+├── .env.local.example                   # Local environment template
+├── .eslintrc.json                       # ESLint configuration
+├── .prettierrc                          # Prettier configuration
+├── .gitignore                           # Git ignore rules
+│
+├── Dockerfile                           # Production container image
+├── docker-compose.yml                   # Local development stack
+│
+├── vitest.config.ts                     # Vitest test runner config
+├── next.config.ts                       # Next.js configuration
+├── tailwind.config.ts                   # Tailwind CSS + design tokens
+├── tsconfig.json                        # TypeScript configuration
+├── postcss.config.js                    # PostCSS configuration
+└── package.json                         # Dependencies & scripts
 ```
 
 ---
